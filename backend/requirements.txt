@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+python-multipart
+httpx
+markdown-it-py
+networkx
+pydantic-settings
+python-dotenv
+pillow
+edge-tts
+gTTS
+pyttsx3
+mutagen

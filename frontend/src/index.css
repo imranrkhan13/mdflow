@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #ddc9a3 transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #ddc9a3;
+  border-radius: 8px;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+/* React Flow overrides to match the paper/umber theme */
+.react-flow__attribution {
+  display: none;
+}
+.react-flow__background {
+  background: #fdfcfa;
+}
+.react-flow__controls {
+  background: #ffffff;
+  border: 1px solid #e8e1d4;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(61,43,31,0.04), 0 4px 12px -4px rgba(61,43,31,0.06);
+}
+.react-flow__controls-button {
+  background: #ffffff;
+  border-bottom: 1px solid #f3efe7;
+  color: #7a5c46;
+}
+.react-flow__controls-button:hover {
+  background: #faf8f4;
+  color: #3d2b1f;
+}
+.react-flow__controls-button svg {
+  fill: currentColor;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
