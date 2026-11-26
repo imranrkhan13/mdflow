@@ -117,10 +117,37 @@ generate a narrated video for that node.
 ffmpeg must be installed and on PATH (`ffmpeg -version` to check) — it's
 used for audio concatenation and final video encoding.
 
+## Repo import + fast answers
+
+**Import a GitHub repo** — paste a public repo URL on the landing page
+(`https://github.com/owner/repo`, a `/tree/<branch>` URL, or a bare
+`owner/repo`). The backend fetches the file tree via the GitHub API,
+reads every source file, parses each file's `import`/`require`/Python
+`import` statements, resolves them to other files in the repo, and
+renders the whole thing as a file-level dependency graph — one node per
+file, edges are real imports. No local filesystem access, so it works
+deployed. A `GITHUB_TOKEN` in `backend/.env` is optional (raises the API
+rate limit, and is required for private repos); public repos need no key.
+
+- `backend/app/services/repo_importer.py` — tree fetch (bounded to 500
+  files, skips `node_modules`/`dist`/etc.), import extraction, resolution
+  (JS/TS relative + index files; Python relative and absolute with a
+  unique-suffix fallback for `backend/`-style roots), and the React Flow
+  layout.
+- `backend/app/routers/repo.py` — `POST /api/repo/import`.
+
+**Fast answers** — AI results are cached per `(project, section, mode)`
+in the in-memory store, and the frontend also memoizes in-flight/resolved
+requests. Re-clicking a node, or switching tabs and back, returns the
+previous answer instantly instead of paying for another provider call.
+Architecture and interview answers are cached per project too.
+
 ## What's actually built
 
 - `backend/app/parsers/markdown_parser.py` — heading hierarchy + code
   block extraction + naive concept keyword detection
+- `backend/app/services/repo_importer.py` — GitHub import → file-level
+  import/dependency graph
 - `backend/app/services/graph_builder.py` — NetworkX graph, layered
   layout, structural + concept edges, serialized to React Flow shape
 - `backend/app/services/ai_router.py` — 5-provider cascading fallback
@@ -130,7 +157,7 @@ used for audio concatenation and final video encoding.
   script generation (beats) via the AI router
 - `backend/app/services/video/` — frame rendering + render orchestration
   + job tracking for the explainer video pipeline
-- `backend/app/routers/{upload,explain,video}.py` — the real endpoints
+- `backend/app/routers/{upload,explain,video,repo}.py` — the real endpoints
 - `frontend/src/pages/Landing.jsx` — hero, drag-drop upload, ambient
   canvas graph background
 - `frontend/src/pages/Workspace.jsx` — three-pane layout
@@ -141,8 +168,8 @@ used for audio concatenation and final video encoding.
 
 ## What's not built (was in the original spec, scoped out for this slice)
 
-PDF/DOCX/source-code (Tree-sitter)/OpenAPI/Mermaid parsing · GitHub repo
-import · full-graph animated execution-flow mode with traveling particles
+PDF/DOCX/source-code (Tree-sitter)/OpenAPI/Mermaid parsing ·
+full-graph animated execution-flow mode with traveling particles
 · timeline scrubber · flashcard mode · interview mode with voice/AI
 evaluation · multiple visualization types (ER diagram, sequence diagram,
 deployment diagram, etc.) · semantic search · persistence beyond

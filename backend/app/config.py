@@ -28,6 +28,10 @@ class Settings(BaseSettings):
     openrouter_api_key: str | None = None
     scaledown_api_key: str | None = None
 
+    # Optional. Public repos import without it; a token just raises the
+    # GitHub API rate limit and lets you import your own private repos.
+    github_token: str | None = None
+
     # CORS: accepts a comma-separated string or a JSON list.
     # On HF Spaces set: CORS_ORIGINS=https://your-app.vercel.app
     # Locally the default covers the Vite dev server.

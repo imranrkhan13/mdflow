@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Upload, ArrowRight, BookOpen, GraduationCap, Layers, Video } from 'lucide-react'
+import { Upload, ArrowRight, BookOpen, GraduationCap, Layers, Video, Github, Loader2 } from 'lucide-react'
 import AmbientGraph from '../components/AmbientGraph.jsx'
 
 const FEATURES = [
@@ -10,13 +10,20 @@ const FEATURES = [
   { icon: Video,         label: 'Narrated videos',            desc: 'AI reads and animates each concept for you' },
 ]
 
-export default function Landing({ onFileReady, error }) {
+export default function Landing({ onFileReady, onRepoReady, error, busy }) {
   const inputRef = useRef(null)
   const [dragging, setDragging] = useState(false)
+  const [repoUrl, setRepoUrl] = useState('')
 
   function handleFiles(files) {
     const file = files?.[0]
     if (file) onFileReady(file)
+  }
+
+  function submitRepo(e) {
+    e.preventDefault()
+    const url = repoUrl.trim()
+    if (url) onRepoReady(url)
   }
 
   return (
@@ -82,6 +89,37 @@ export default function Landing({ onFileReady, error }) {
             <span className="text-umber-200">·</span>
             Runs on your machine
             <ArrowRight className="h-3 w-3" />
+          </p>
+
+          {/* Repo import */}
+          <div className="mt-6 flex items-center gap-3">
+            <div className="h-px flex-1 bg-umber-200" />
+            <span className="font-mono text-[10px] uppercase tracking-wider text-umber-400">or a repo</span>
+            <div className="h-px flex-1 bg-umber-200" />
+          </div>
+
+          <form onSubmit={submitRepo} className="mt-4 flex items-center gap-2">
+            <div className="flex flex-1 items-center gap-2 rounded-xl border border-umber-200 bg-white/80 px-3 py-2.5 backdrop-blur focus-within:border-clay">
+              <Github className="h-4 w-4 shrink-0 text-umber-400" />
+              <input
+                value={repoUrl}
+                onChange={e => setRepoUrl(e.target.value)}
+                disabled={busy}
+                placeholder="https://github.com/owner/repo"
+                className="w-full bg-transparent font-sans text-xs text-umber-900 placeholder:text-umber-400 focus:outline-none"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={busy || !repoUrl.trim()}
+              className="flex items-center gap-1.5 rounded-xl bg-umber-900 px-4 py-2.5 font-sans text-xs font-semibold text-white transition-colors hover:bg-umber-800 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Github className="h-3.5 w-3.5" />}
+              Map it
+            </button>
+          </form>
+          <p className="mt-2 text-center font-sans text-[11px] text-umber-400">
+            Public repos only · builds a file-level import graph instantly
           </p>
         </motion.div>
 

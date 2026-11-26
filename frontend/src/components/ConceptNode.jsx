@@ -1,9 +1,10 @@
 import { memo } from 'react'
 import { Handle, Position } from 'reactflow'
-import { FileCode2, Layers } from 'lucide-react'
+import { FileCode2, Layers, File } from 'lucide-react'
 
 function ConceptNode({ data, selected }) {
-  const { title, level, preview, hasCode, concepts } = data
+  const { title, level, preview, hasCode, concepts, kind, lang, path } = data
+  const isFile = kind === 'file'
 
   return (
     <div
@@ -27,17 +28,25 @@ function ConceptNode({ data, selected }) {
       <div className="flex items-center justify-between gap-2">
         <span
           className={`font-mono text-[10px] uppercase tracking-wider ${
-            level <= 1 ? 'text-clay' : 'text-umber-400'
+            isFile || level <= 1 ? 'text-clay' : 'text-umber-400'
           }`}
         >
-          {level <= 1 ? 'root' : `h${level}`}
+          {isFile ? (lang || 'file') : (level <= 1 ? 'root' : `h${level}`)}
         </span>
-        {hasCode && <FileCode2 className="h-3 w-3 text-sage" />}
+        {isFile
+          ? <File className="h-3 w-3 text-umber-300" />
+          : hasCode && <FileCode2 className="h-3 w-3 text-sage" />}
       </div>
 
-      <h3 className="mt-1.5 font-sans text-sm font-semibold leading-snug text-umber-900">
+      <h3 className="mt-1.5 truncate font-sans text-sm font-semibold leading-snug text-umber-900">
         {title}
       </h3>
+
+      {isFile && path && (
+        <p className="mt-0.5 truncate font-mono text-[10px] text-umber-400" title={path}>
+          {path}
+        </p>
+      )}
 
       {preview && (
         <p className="mt-1 line-clamp-2 font-sans text-xs leading-relaxed text-umber-500">

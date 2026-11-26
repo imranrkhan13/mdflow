@@ -20,17 +20,23 @@ import VideoPanel from '../components/VideoPanel.jsx'
 const nodeTypes = { conceptNode: ConceptNode }
 
 function styledEdges(rawEdges) {
-  return rawEdges.map((e) => ({
-    ...e,
-    style: {
-      stroke: e.data?.kind === 'concept' ? '#b5673f' : '#ddc9a3',
-      strokeWidth: 1.5,
-      strokeDasharray: e.data?.kind === 'concept' ? '5 4' : undefined,
-    },
-    label: e.data?.kind === 'concept' ? e.data.via : undefined,
-    labelStyle: { fill: '#8b5a3c', fontSize: 10, fontFamily: 'JetBrains Mono' },
-    labelBgStyle: { fill: '#fdfcfa', fillOpacity: 0.9 },
-  }))
+  return rawEdges.map((e) => {
+    const kind = e.data?.kind
+    const isImport = kind === 'import'
+    const isConcept = kind === 'concept'
+    return {
+      ...e,
+      style: {
+        stroke: isImport ? '#8b7d6b' : isConcept ? '#b5673f' : '#ddc9a3',
+        strokeWidth: isImport ? 1.25 : 1.5,
+        strokeDasharray: isConcept ? '5 4' : undefined,
+        opacity: isImport ? 0.7 : 1,
+      },
+      label: isConcept ? e.data.via : undefined,
+      labelStyle: { fill: '#8b5a3c', fontSize: 10, fontFamily: 'JetBrains Mono' },
+      labelBgStyle: { fill: '#fdfcfa', fillOpacity: 0.9 },
+    }
+  })
 }
 
 const TABS = [
@@ -111,9 +117,11 @@ function SidebarContent({ nodes, selectedId, onSelect }) {
             <span className={`mt-0.5 shrink-0 rounded px-1 py-0.5 font-mono text-[9px] uppercase ${
               selectedId === n.id ? 'bg-clay/20 text-clay' : 'bg-umber-100 text-umber-400'
             }`}>
-              {n.data.level <= 1 ? 'root' : `h${n.data.level}`}
+              {n.data.kind === 'file' ? 'file' : n.data.level <= 1 ? 'root' : `h${n.data.level}`}
             </span>
-            <span className="truncate font-sans text-xs leading-snug">{n.data.title}</span>
+            <span className="truncate font-sans text-xs leading-snug" title={n.data.path || n.data.title}>
+              {n.data.title}
+            </span>
           </button>
         ))}
       </div>
@@ -231,7 +239,7 @@ export default function Workspace({ project, onReset }) {
             {project.filename}
           </span>
           <span className="rounded-full bg-umber-100 px-2 py-0.5 font-mono text-[10px] text-umber-500">
-            {nodes.length} concepts
+            {nodes.length} {nodes[0]?.data?.kind === 'file' ? 'files' : 'concepts'}
           </span>
         </div>
 

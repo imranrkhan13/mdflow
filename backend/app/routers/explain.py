@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from app.services.ai_router import generate, ProviderError
-from app.services.store import get_project, get_section
+from app.services.store import get_project, get_section, get_cached_answer, set_cached_answer
 
 router = APIRouter(prefix="/api/explain", tags=["explain"])
 
@@ -104,6 +104,10 @@ async def explain_section(req: ExplainRequest):
     if not section:
         raise HTTPException(status_code=404, detail="Section not found.")
 
+    cached = get_cached_answer(req.project_id, "section", f"{req.section_id}:{req.mode}")
+    if cached:
+        return {**cached, "cached": True}
+
     instruction = MODE_PROMPTS.get(req.mode, MODE_PROMPTS["explain"])
     code_part = ""
     if section.code_blocks:
@@ -122,6 +126,7 @@ async def explain_section(req: ExplainRequest):
         result = await generate(prompt, system=EXPLAIN_SYSTEM)
     except ProviderError as e:
         raise HTTPException(status_code=502, detail=f"All AI providers failed: {e}")
+    set_cached_answer(req.project_id, "section", f"{req.section_id}:{req.mode}", result)
     return result
 
 
@@ -130,6 +135,10 @@ async def generate_interview_prep(req: InterviewRequest):
     project = get_project(req.project_id)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found.")
+
+    cached = get_cached_answer(req.project_id, "interview", "all")
+    if cached:
+        return {**cached, "cached": True}
 
     sections = project["sections"]
     filename = project["filename"]
@@ -180,6 +189,7 @@ async def generate_interview_prep(req: InterviewRequest):
         result = await generate(prompt, system=INTERVIEW_SYSTEM)
     except ProviderError as e:
         raise HTTPException(status_code=502, detail=f"All AI providers failed: {e}")
+    set_cached_answer(req.project_id, "interview", "all", result)
     return result
 
 
@@ -188,6 +198,10 @@ async def explain_architecture(req: ArchitectureRequest):
     project = get_project(req.project_id)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found.")
+
+    cached = get_cached_answer(req.project_id, "architecture", "all")
+    if cached:
+        return {**cached, "cached": True}
 
     sections = project["sections"]
     filename = project["filename"]
@@ -236,4 +250,5 @@ async def explain_architecture(req: ArchitectureRequest):
         result = await generate(prompt, system=ARCHITECTURE_SYSTEM)
     except ProviderError as e:
         raise HTTPException(status_code=502, detail=f"All AI providers failed: {e}")
+    set_cached_answer(req.project_id, "architecture", "all", result)
     return result
