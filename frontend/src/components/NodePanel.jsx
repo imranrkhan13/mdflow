@@ -63,9 +63,14 @@ export default function NodePanel({ projectId, node }) {
       {/* Node header */}
       <div className="border-b border-umber-200 bg-umber-100/30 px-5 py-3">
         <span className="font-mono text-[10px] uppercase tracking-wider text-clay">
-          {node.data.level <= 1 ? 'Root section' : `Section level ${node.data.level}`}
+          {node.data.kind === 'file'
+            ? (node.data.lang || 'File')
+            : node.data.level <= 1 ? 'Root section' : `Section level ${node.data.level}`}
         </span>
         <h2 className="mt-0.5 font-sans text-base font-bold text-umber-900">{node.data.title}</h2>
+        {node.data.path && (
+          <p className="mt-0.5 break-all font-mono text-[10px] text-umber-400">{node.data.path}</p>
+        )}
         {node.data.concepts?.length > 0 && (
           <div className="mt-1.5 flex flex-wrap gap-1">
             {node.data.concepts.slice(0, 5).map(c => (

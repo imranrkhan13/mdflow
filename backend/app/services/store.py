@@ -9,6 +9,19 @@ from app.parsers.markdown_parser import Section
 
 _PROJECTS: dict[str, dict] = {}
 
+# AI answers, keyed by (project_id, scope, key). Same section + mode asked
+# twice (re-clicking a node, switching tabs and back) returns instantly
+# instead of paying for another provider round-trip.
+_ANSWERS: dict[tuple[str, str, str], dict] = {}
+
+
+def get_cached_answer(project_id: str, scope: str, key: str) -> dict | None:
+    return _ANSWERS.get((project_id, scope, key))
+
+
+def set_cached_answer(project_id: str, scope: str, key: str, value: dict) -> None:
+    _ANSWERS[(project_id, scope, key)] = value
+
 
 def create_project(filename: str, sections: list[Section], graph: dict) -> str:
     project_id = str(uuid.uuid4())

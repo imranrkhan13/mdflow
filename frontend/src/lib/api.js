@@ -20,14 +20,34 @@ async function call(path, options = {}) {
   return res.json()
 }
 
+/* In-flight + resolved responses, keyed by path+body. Re-clicking a node or
+ * switching tabs returns the previous answer instantly instead of refetching. */
+const _cache = new Map()
+
+function cachedCall(path, options) {
+  const key = `${path}:${options.body || ''}`
+  if (_cache.has(key)) return _cache.get(key)
+  const p = call(path, options).catch((e) => { _cache.delete(key); throw e })
+  _cache.set(key, p)
+  return p
+}
+
 export async function uploadDocument(file) {
   const form = new FormData()
   form.append('file', file)
   return call('/upload', { method: 'POST', body: form })
 }
 
+export async function importRepo(url) {
+  return call('/repo/import', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url }),
+  })
+}
+
 export async function explainSection(projectId, sectionId, mode = 'explain') {
-  return call('/explain', {
+  return cachedCall('/explain', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ project_id: projectId, section_id: sectionId, mode }),
@@ -35,7 +55,7 @@ export async function explainSection(projectId, sectionId, mode = 'explain') {
 }
 
 export async function generateInterviewPrep(projectId) {
-  return call('/explain/interview', {
+  return cachedCall('/explain/interview', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ project_id: projectId }),
@@ -43,7 +63,7 @@ export async function generateInterviewPrep(projectId) {
 }
 
 export async function explainArchitecture(projectId) {
-  return call('/explain/architecture', {
+  return cachedCall('/explain/architecture', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ project_id: projectId }),
